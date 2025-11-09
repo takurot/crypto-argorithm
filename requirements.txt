@@ -1,10 +1,59 @@
+# Core Data Science
 pandas>=2.1
 numpy>=1.26
-seaborn>=0.12
-matplotlib>=3.8
 scikit-learn>=1.3
+scipy>=1.11
+
+# Machine Learning
+lightgbm>=4.0
+optuna>=3.0
+xgboost>=2.0
+
+# Time Series
 statsmodels>=0.14
+hmmlearn>=0.3
+
+# MLOps
+mlflow>=2.8
+dvc>=3.0
+
+# Workflow
+apache-airflow>=2.7
+prefect>=2.14
+
+# Visualization
+matplotlib>=3.8
+seaborn>=0.12
+plotly>=5.17
+streamlit>=1.28
+
+# Data Collection
 yfinance>=0.2
 requests>=2.31
+requests-ratelimiter>=0.4
+python-dotenv>=1.0
+
+# Technical Analysis
+ta-lib>=0.4
+pandas-ta>=0.3
+
+# Network Analysis
 networkx>=3.2
 
+# Utilities
+pyyaml>=6.0
+tqdm>=4.66
+joblib>=1.3
+
+# Testing
+pytest>=7.4
+pytest-cov>=4.1
+pytest-mock>=3.12
+
+# Code Quality
+black>=23.11
+flake8>=6.1
+mypy>=1.7
+
+# Logging
+structlog>=23.2

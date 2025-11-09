@@ -1,0 +1,160 @@
+# Feature Engineering Configuration
+
+lag_features:
+  price:
+    lags: [1, 2, 3, 5, 7]
+    columns: ["close", "high", "low", "open"]
+    
+  volume:
+    lags: [1, 2, 3, 5, 7]
+    
+  cross_asset:
+    assets: ["ETH", "SOL", "BNB"]
+    lags: [1, 2, 3]
+    features: ["log_return", "volume_change"]
+    
+  macro:
+    lags: [1, 2, 3]
+    features: ["nasdaq", "gold", "dxy", "us10y", "m2_supply"]
+    
+  sentiment:
+    lags: [1, 2, 3, 5, 7]
+    features: ["fear_greed_index", "news_sentiment", "social_volume"]
+
+technical_indicators:
+  sma:
+    windows: [7, 21, 50]
+    
+  ema:
+    windows: [9, 26, 50]
+    
+  bollinger:
+    window: 20
+    num_std: 2
+    
+  rsi:
+    window: 14
+    
+  macd:
+    fast: 12
+    slow: 26
+    signal: 9
+    
+  atr:
+    window: 14
+    
+  momentum:
+    window: 10
+    
+  rate_of_change:
+    window: 10
+
+volatility_features:
+  rolling_std:
+    windows: [10, 30, 90]
+    
+  parkinson:
+    window: 20
+    
+  garman_klass:
+    window: 20
+    
+  realized_volatility:
+    window: 20
+    intraday_periods: 24  # hourly data
+    
+  volatility_regime:
+    percentile_threshold: 75
+    lookback_days: 90
+
+regime_detection:
+  hmm:
+    n_states: 2
+    covariance_type: "diag"
+    n_iter: 100
+    random_state: 42
+    
+  drawdown:
+    thresholds: [-0.05, -0.10, -0.20]  # 5%, 10%, 20% drawdown
+    
+  composite:
+    features: ["volatility", "vix", "dxy", "volume"]
+    n_clusters: 3
+    method: "kmeans"
+
+pca:
+  price_series:
+    variance_explained: 0.90
+    features: ["open", "high", "low", "close", "volume"]
+    
+  macro_series:
+    variance_explained: 0.90
+    features: ["nasdaq", "gold", "dxy", "us10y", "m2_supply"]
+    
+  apply_to_models: ["ridge", "lasso", "logistic"]
+
+target_encoding:
+  y_dir_rolling_win_rate:
+    window: 7
+    lag_start: 8
+    lag_end: 15
+    
+  log_return_rolling:
+    stats: ["mean", "std"]
+    window: 14
+    lag: 1
+
+meta_features:
+  time:
+    day_of_week: true
+    month: true
+    quarter: true
+    is_month_start: true
+    is_month_end: true
+    is_quarter_end: true
+    
+  economic_events:
+    enabled: true
+    lookback_days: 3
+    lookforward_days: 3
+    events: ["FOMC", "CPI", "NFP", "JOLTS"]
+    
+  market:
+    is_weekend: true
+    us_market_open: true
+
+feature_selection:
+  shap:
+    enabled: true
+    top_percentile: 0.30
+    min_samples: 1000
+    
+  correlation:
+    threshold: 0.95
+    method: "pearson"
+    
+  variance:
+    threshold: 0.01
+
+targets:
+  y_1d:
+    type: "regression"
+    calculation: "log_return"
+    horizon: 1
+    
+  y_3d_avg:
+    type: "regression"
+    calculation: "average_log_return"
+    horizon: 3
+    
+  y_7d_avg:
+    type: "regression"
+    calculation: "average_log_return"
+    horizon: 7
+    
+  y_dir:
+    type: "classification"
+    calculation: "direction"
+    horizon: 1
+    threshold: 0.0
+

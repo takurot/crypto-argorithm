@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  crypto-algorithm:
+    build: .
+    container_name: crypto-algorithm
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./mlruns:/app/mlruns
+      - ./output:/app/output
+      - ./.env:/app/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python scripts/crypto_kpi_analysis.py
+    restart: unless-stopped
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.8.0
+    container_name: mlflow-server
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlruns
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri file:///mlruns
+    restart: unless-stopped
+
+  dashboard:
+    build: .
+    container_name: crypto-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./output:/app/output
+      - ./.env:/app/.env
+    command: streamlit run dashboard/app.py
+    restart: unless-stopped
+    depends_on:
+      - mlflow
+

@@ -1,0 +1,223 @@
+# Model Configuration
+
+lightgbm:
+  regression:
+    objective: "regression"
+    metric: "rmse"
+    boosting_type: "gbdt"
+    num_leaves: 31
+    max_depth: 6
+    min_data_in_leaf: 20
+    learning_rate: 0.05
+    feature_fraction: 0.8
+    bagging_fraction: 0.8
+    bagging_freq: 5
+    lambda_l1: 0.1
+    lambda_l2: 0.1
+    min_gain_to_split: 0.01
+    verbose: -1
+    random_state: 42
+    n_estimators: 500
+    early_stopping_rounds: 50
+    
+  classification:
+    objective: "binary"
+    metric: "binary_logloss"
+    boosting_type: "gbdt"
+    num_leaves: 31
+    max_depth: 6
+    min_data_in_leaf: 20
+    learning_rate: 0.05
+    feature_fraction: 0.8
+    bagging_fraction: 0.8
+    bagging_freq: 5
+    lambda_l1: 0.1
+    lambda_l2: 0.1
+    min_gain_to_split: 0.01
+    verbose: -1
+    random_state: 42
+    n_estimators: 500
+    early_stopping_rounds: 50
+    is_unbalance: true
+
+optuna:
+  n_trials: 100
+  timeout: 3600  # 1 hour
+  sampler: "TPESampler"
+  pruner: "MedianPruner"
+  
+  search_space:
+    num_leaves:
+      type: "int"
+      low: 20
+      high: 50
+      
+    max_depth:
+      type: "int"
+      low: 3
+      high: 8
+      
+    min_data_in_leaf:
+      type: "int"
+      low: 10
+      high: 50
+      
+    learning_rate:
+      type: "float"
+      low: 0.01
+      high: 0.1
+      log: true
+      
+    feature_fraction:
+      type: "float"
+      low: 0.6
+      high: 1.0
+      
+    bagging_fraction:
+      type: "float"
+      low: 0.6
+      high: 1.0
+      
+    lambda_l1:
+      type: "float"
+      low: 0.0
+      high: 1.0
+      
+    lambda_l2:
+      type: "float"
+      low: 0.0
+      high: 1.0
+
+baseline:
+  arima:
+    order: [2, 0, 2]
+    seasonal_order: [0, 0, 0, 0]
+    
+  var:
+    maxlags: 7
+    ic: "aic"
+    
+  ridge:
+    alpha: 1.0
+    random_state: 42
+    
+  lasso:
+    alpha: 0.1
+    random_state: 42
+    max_iter: 10000
+    
+  logistic:
+    C: 1.0
+    penalty: "l2"
+    random_state: 42
+    max_iter: 1000
+    solver: "lbfgs"
+
+ensemble:
+  stacking:
+    meta_learner: "logistic"
+    cv_folds: 5
+    use_probas: true
+    
+  weighting:
+    method: "inverse_variance"
+    min_weight: 0.05
+    normalize: true
+    
+  regime_adaptive:
+    high_volatility:
+      sentiment_weight: 1.5
+      volatility_weight: 1.3
+      macro_weight: 0.7
+      
+    low_volatility:
+      sentiment_weight: 0.7
+      volatility_weight: 0.8
+      macro_weight: 1.5
+
+calibration:
+  methods: ["platt", "isotonic"]
+  cv_folds: 5
+  
+threshold_optimization:
+  metric: "expected_value"
+  transaction_cost: 0.001  # 0.1%
+  slippage: 0.0005  # 0.05%
+  search_range:
+    start: 0.45
+    end: 0.65
+    step: 0.01
+
+training:
+  validation_size: 0.2
+  test_size: 0.1
+  shuffle: false  # Time series - no shuffle
+  random_state: 42
+  
+retraining:
+  frequency: "weekly"  # weekly, monthly
+  trigger_day: "monday"
+  hyperparameter_search_frequency: "monthly"
+  
+  rollback_criteria:
+    rmse_threshold_multiplier: 1.2  # > 1.2x best model
+    directional_accuracy_min: 0.55
+    consecutive_failures: 3
+
+mlflow:
+  experiment_name: "crypto_price_prediction"
+  tracking_uri: "file:./mlruns"
+  
+  tags:
+    - "baseline"
+    - "lightgbm"
+    - "ensemble"
+    - "production"
+    - "staging"
+    
+  artifacts:
+    - "model"
+    - "feature_importance"
+    - "shap_values"
+    - "confusion_matrix"
+    - "predictions"
+
+evaluation:
+  metrics:
+    regression:
+      - "rmse"
+      - "mae"
+      - "mape"
+      - "r2"
+      
+    classification:
+      - "accuracy"
+      - "precision"
+      - "recall"
+      - "f1"
+      - "mcc"
+      - "roc_auc"
+      
+    trading:
+      - "sharpe_ratio"
+      - "max_drawdown"
+      - "directional_hit_ratio"
+      - "cumulative_pnl"
+      - "win_rate"
+      - "profit_factor"
+      
+  confidence_intervals:
+    enabled: true
+    method: "bootstrap"
+    n_iterations: 1000
+    confidence_level: 0.90
+    rolling_window: 90
+
+targets:
+  directional_1d_min: 0.57
+  directional_3d_min: 0.58
+  directional_7d_min: 0.55
+  rmse_max: 0.025
+  sharpe_min: 0.7
+  mdd_max: 0.15
+
