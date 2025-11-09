@@ -27,17 +27,24 @@ import logging
 import os
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from textwrap import dedent
 from typing import Dict, Iterable, List, Optional, Tuple
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
 import seaborn as sns
 import yfinance as yf
+
+# Suppress font warnings for CJK characters
+matplotlib.rcParams['font.sans-serif'] = ['DejaVu Sans']
+matplotlib.rcParams['axes.unicode_minus'] = False
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning, module='matplotlib')
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
@@ -62,13 +69,13 @@ def parse_args(argv: Optional[Iterable[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "--start-date",
         type=str,
-        default=(datetime.utcnow() - timedelta(days=365 * 2)).strftime(DATE_FMT),
+        default=(datetime.now(timezone.utc) - timedelta(days=365 * 2)).strftime(DATE_FMT),
         help="分析開始日 (YYYY-MM-DD)",
     )
     parser.add_argument(
         "--end-date",
         type=str,
-        default=datetime.utcnow().strftime(DATE_FMT),
+        default=datetime.now(timezone.utc).strftime(DATE_FMT),
         help="分析終了日 (YYYY-MM-DD)",
     )
     parser.add_argument(
