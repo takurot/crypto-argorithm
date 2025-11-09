@@ -78,19 +78,25 @@ class ExchangeCollector(BaseCollector):
             if quote == "USD" and exchange.lower() in ["binance", "okx", "kucoin", "gateio", "bybit"]:
                 formatted_symbol = symbol_format.format(base=symbol, quote="USDT")
             
-            # Build URL
+            # Build URL and params
             url = config["url"]
-            if "{symbol}" in url:
-                url = url.format(symbol=formatted_symbol)
-            
             params = {}
-            if "{symbol}" not in config["url"] and exchange.lower() in ["kraken", "okx", "kucoin"]:
-                if exchange.lower() == "kraken":
+            
+            if "{symbol}" in url:
+                # Symbol in URL path
+                url = url.format(symbol=formatted_symbol)
+            else:
+                # Symbol as query parameter
+                if exchange.lower() == "binance":
+                    params = {"symbol": formatted_symbol}
+                elif exchange.lower() == "kraken":
                     params = {"pair": formatted_symbol}
                 elif exchange.lower() == "okx":
                     params = {"instId": formatted_symbol}
                 elif exchange.lower() == "kucoin":
                     params = {"symbol": formatted_symbol}
+                elif exchange.lower() == "bybit":
+                    params = {"category": "spot", "symbol": formatted_symbol}
             
             # Fetch data
             data = self.fetch_with_retry(url, params=params, timeout=10)
@@ -151,7 +157,9 @@ class ExchangeCollector(BaseCollector):
             elif exchange == "cryptocom":
                 return float(data["result"]["data"][0]["a"])
             elif exchange == "bybit":
-                return float(data["result"]["list"][0]["lastPrice"])
+                if "result" in data and "list" in data["result"] and len(data["result"]["list"]) > 0:
+                    return float(data["result"]["list"][0]["lastPrice"])
+                return None
             else:
                 self.logger.warning("unknown_exchange_format", exchange=exchange)
                 return None
